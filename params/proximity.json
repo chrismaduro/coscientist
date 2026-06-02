@@ -1,0 +1,6 @@
+{
+  "max_clusters": 20,
+  "min_cluster_size": 1,
+  "split_on_doubt": true,
+  "label_max_words": 8
+}

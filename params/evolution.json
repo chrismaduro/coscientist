@@ -1,0 +1,13 @@
+{
+  "n_evolved_per_round": 5,
+  "source_pool_size": 15,
+  "strategies": [
+    "enhancement_through_grounding",
+    "coherence_and_feasibility",
+    "combination",
+    "simplification",
+    "out_of_box",
+    "inspiration"
+  ],
+  "min_improvement_required": "genuine — not just wording changes"
+}

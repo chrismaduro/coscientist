@@ -1,0 +1,18 @@
+{
+  "max_rounds": 3,
+  "scientist_in_the_loop": {
+    "confirm_plan_before_round_1": true,
+    "checkpoint_each_round_end": true
+  },
+  "convergence": {
+    "spearman_converged": 0.9,
+    "top5_churn_converged": 0.2
+  },
+  "contender_pool_size": 10,
+  "max_active_pool": 40,
+  "initial_elo": 1200,
+  "k_factor": 32,
+  "k_factor_debate": 64,
+  "generation_techniques_round_1": ["literature", "debate", "assumptions"],
+  "generation_techniques_round_n": ["literature", "debate", "assumptions", "expansion"]
+}

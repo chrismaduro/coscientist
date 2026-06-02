@@ -1,0 +1,12 @@
+{
+  "default_to_active": true,
+  "reject_only_if": [
+    "fundamentally incorrect",
+    "non-falsifiable",
+    "unsafe",
+    "exact duplicate",
+    "out of scope"
+  ],
+  "criterion_scale": "1-5",
+  "criteria": ["alignment", "plausibility", "novelty", "testability", "safety"]
+}

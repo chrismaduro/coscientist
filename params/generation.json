@@ -1,0 +1,7 @@
+{
+  "hypotheses_per_round": 15,
+  "fronts_min": 5,
+  "techniques": ["literature", "debate", "assumptions", "expansion"],
+  "cross_disciplinary_weight": 0.4,
+  "frontier_weight": 0.2
+}

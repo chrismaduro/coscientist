@@ -1,0 +1,45 @@
+{
+  "research_goal": "Identify novel interventions to reduce academic burnout among graduate students",
+  "domain_context": {
+    "research_anchor": "Graduate student mental health and well-being — specifically academic burnout drivers and mitigation strategies",
+    "target_population": "PhD and Masters students at research universities, years 1-5",
+    "context_setting": "Western research university contexts, post-COVID academic environment",
+    "hard_constraints": [
+      "Interventions must be feasible within existing university resource constraints",
+      "Must be ethically approvable without extensive IRB burden"
+    ],
+    "soft_factors": [
+      "Preference for scalable digital interventions",
+      "Interest in peer-based rather than top-down interventions"
+    ],
+    "frontier_seed_list": {
+      "core_fronts": [
+        "Advisor-student relationship dynamics",
+        "Sense of belonging and community",
+        "Autonomy and self-determination"
+      ],
+      "cross_disciplinary_targets": [
+        "Organizational psychology — job demands-resources model",
+        "Sports psychology — peak performance under pressure",
+        "Network science — social support structures"
+      ],
+      "frontier_phenomena": [
+        "Post-pandemic academic re-entry stress",
+        "AI-driven academic workload changes"
+      ]
+    },
+    "literature_hierarchy": {
+      "primary": "Peer-reviewed psychology and education journals (last 10 years)",
+      "secondary": "Higher education institutional reports, meta-analyses",
+      "tertiary": "Grey literature, practitioner blogs",
+      "treat_with_caution": "Studies from pre-2000, single-institution convenience samples without controls"
+    },
+    "output_language": "English",
+    "output_format_preference": "top 10 ranked hypotheses grouped by theme, abstract-style summary"
+  },
+  "config": {
+    "max_rounds": 2,
+    "hypotheses_per_round": 10,
+    "n_evolved_per_round": 3
+  }
+}

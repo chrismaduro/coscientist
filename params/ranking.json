@@ -1,0 +1,9 @@
+{
+  "initial_elo": 1200,
+  "k_factor": 32,
+  "k_factor_debate": 64,
+  "contender_pool_size": 10,
+  "min_matches_per_hypothesis": 3,
+  "tier1_match_budget": 40,
+  "tier2_debates_per_contender": 3
+}

@@ -1,0 +1,28 @@
+# ── Secrets — NEVER commit ─────────────────────────────────────
+.env
+dist/.env
+
+# ── Dependencies ───────────────────────────────────────────────
+node_modules/
+
+# ── Build output (89MB exe + blobs) ────────────────────────────
+dist/
+dist-app/
+
+# ── Runtime data ───────────────────────────────────────────────
+state/state.json
+output/*/
+intake.saved.json
+intake.json
+
+# ── OS / editor cruft ──────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
+.vscode/
+.idea/
+
+# Keep the placeholder files so the dirs exist in the repo
+!state/.gitkeep
+!output/.gitkeep

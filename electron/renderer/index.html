@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CoScientist</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div id="app">
+
+  <!-- ── Sidebar ────────────────────────────────────────────── -->
+  <nav id="sidebar">
+    <div class="logo">CoScientist<span>AI Hypothesis Engine</span></div>
+
+    <div class="nav-item active" data-panel="setup"><span class="icon">⚙</span> Setup</div>
+    <div class="nav-item" data-panel="live"><span class="icon">▶</span> Live Run</div>
+    <div class="nav-item" data-panel="hypotheses"><span class="icon">◈</span> Hypotheses</div>
+    <div class="nav-item" data-panel="report"><span class="icon">📄</span> Report</div>
+
+    <div class="nav-divider"></div>
+
+    <div class="nav-item" data-panel="settings"><span class="icon">◎</span> Settings</div>
+    <div class="nav-item" data-panel="applog">
+      <span class="icon">⬡</span> App Log
+      <span class="log-error-badge" id="log-error-badge" style="display:none">!</span>
+    </div>
+
+    <div class="run-status">
+      <div id="status-dot" class="dot"></div>
+      <span id="status-text">Idle</span>
+    </div>
+  </nav>
+
+  <!-- ── Main ──────────────────────────────────────────────── -->
+  <div id="main">
+
+    <!-- Setup panel -->
+    <div id="panel-setup" class="panel active">
+      <div class="panel-header">
+        <h2>Run Configuration</h2>
+        <div class="badge" id="setup-run-id-badge">No active run</div>
+      </div>
+      <div class="panel-body setup-panel-body">
+        <div id="setup-error" class="error-banner"></div>
+
+        <!-- Welcome screen (shown first) -->
+        <div id="setup-welcome" class="setup-welcome">
+          <div class="welcome-cards">
+            <div class="welcome-card" id="card-guide">
+              <div class="welcome-card-icon">✦</div>
+              <h3>AI Research Guide</h3>
+              <p>Not sure where to start? Let Claude interview you about your domain and synthesise a research goal for you.</p>
+              <button class="btn btn-primary">Start guided session →</button>
+            </div>
+            <div class="welcome-card-divider">or</div>
+            <div class="welcome-card" id="card-load">
+              <div class="welcome-card-icon">📂</div>
+              <h3>Load Configuration</h3>
+              <p>Load a previously saved intake file, or use the built-in example to get started immediately.</p>
+              <div class="welcome-card-btns">
+                <button class="btn btn-secondary" id="btn-load-intake">Load file…</button>
+                <button class="btn btn-secondary" id="btn-load-example">⚡ Load example</button>
+              </div>
+            </div>
+          </div>
+          <button class="welcome-skip" id="btn-skip-welcome">or configure manually →</button>
+        </div>
+
+        <!-- Tab layout (hidden until welcome choice) -->
+        <div id="setup-tabs-area" style="display:none; flex:1; overflow:hidden; display:none; flex-direction:column;">
+
+          <div class="tab-bar">
+            <button class="tab" data-tab="guide">✦ AI Guide</button>
+            <button class="tab active" data-tab="research">Research</button>
+            <button class="tab" data-tab="constraints">Constraints</button>
+            <button class="tab" data-tab="frontier">Frontier Seeds</button>
+            <button class="tab" data-tab="literature">Literature</button>
+            <button class="tab" data-tab="run">Run Settings</button>
+          </div>
+
+          <!-- AI Guide tab -->
+          <div class="tab-panel guide-panel" id="tab-guide">
+            <div class="guide-messages" id="guide-messages">
+              <div class="guide-welcome">
+                <div class="guide-welcome-icon">✦</div>
+                <h3>Research Goal Guide</h3>
+                <p>Tell me what you're broadly interested in — a domain, a problem, a population, or even just a vague curiosity — and we'll work from there.</p>
+                <button class="btn btn-primary" id="btn-guide-start">Let's start →</button>
+              </div>
+            </div>
+            <div class="guide-apply-bar" id="guide-apply-bar" style="display:none">
+              <span class="guide-apply-text">✓ Research goal synthesised</span>
+              <button class="btn btn-primary" id="btn-guide-apply">Apply to form →</button>
+              <button class="btn btn-secondary" id="btn-guide-reset">Start over</button>
+            </div>
+            <div class="guide-input-row" id="guide-input-row" style="display:none">
+              <textarea id="guide-input" rows="2" placeholder="Type your message… (Enter to send, Shift+Enter for newline)"></textarea>
+              <button class="btn btn-primary" id="btn-guide-send">Send</button>
+            </div>
+          </div>
+
+          <!-- Research tab -->
+          <div class="tab-panel active" id="tab-research">
+            <div class="form-group">
+              <label>Research Goal <span class="required">*</span></label>
+              <textarea id="cfg-goal" rows="3" placeholder="What question are you investigating?"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Research Anchor</label>
+              <input id="cfg-anchor" type="text" placeholder="Domain + primary question (defaults to research goal if blank)" />
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Target Population</label>
+                <input id="cfg-population" type="text" placeholder="Who / what are you studying?" />
+              </div>
+              <div class="form-group">
+                <label>Context Setting</label>
+                <input id="cfg-context" type="text" placeholder="Environment, time frame, etc." />
+              </div>
+            </div>
+          </div>
+
+          <!-- Constraints tab -->
+          <div class="tab-panel" id="tab-constraints">
+            <div class="form-group">
+              <label>Hard Constraints</label>
+              <textarea id="cfg-hard" rows="6" placeholder="One per line&#10;e.g. Must be feasible within existing university resource constraints"></textarea>
+              <div class="hint">Enforced by the Reflection agent — hard limits on acceptable hypotheses. Keep to genuine blockers only.</div>
+            </div>
+            <div class="form-group">
+              <label>Soft Factors</label>
+              <textarea id="cfg-soft" rows="6" placeholder="One per line&#10;e.g. Preference for scalable digital interventions"></textarea>
+              <div class="hint">Preferences that Generation and Evolution will favour but not enforce.</div>
+            </div>
+          </div>
+
+          <!-- Frontier Seeds tab -->
+          <div class="tab-panel" id="tab-frontier">
+            <div class="form-group">
+              <label>Core Fronts</label>
+              <textarea id="cfg-fronts" rows="4" placeholder="One per line&#10;e.g. Advisor-student relationship dynamics"></textarea>
+              <div class="hint">The main thematic areas Generation should cover. Aim for 5+.</div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Cross-disciplinary Targets</label>
+                <textarea id="cfg-cross" rows="4" placeholder="One per line&#10;e.g. Organizational psychology — job demands-resources model"></textarea>
+                <div class="hint">Fields outside the primary domain to borrow mechanisms from.</div>
+              </div>
+              <div class="form-group">
+                <label>Frontier Phenomena</label>
+                <textarea id="cfg-phenomena" rows="4" placeholder="One per line&#10;e.g. Post-pandemic academic re-entry stress"></textarea>
+                <div class="hint">Emerging areas where literature is thin — Generation will actively probe these.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Literature tab -->
+          <div class="tab-panel" id="tab-literature">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Primary Sources</label>
+                <input id="cfg-lit-primary" type="text" placeholder="e.g. Peer-reviewed journals, last 10 years" />
+              </div>
+              <div class="form-group">
+                <label>Secondary Sources</label>
+                <input id="cfg-lit-secondary" type="text" placeholder="e.g. Meta-analyses, systematic reviews" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Tertiary Sources</label>
+                <input id="cfg-lit-tertiary" type="text" placeholder="e.g. Grey literature, practitioner blogs" />
+              </div>
+              <div class="form-group">
+                <label>Treat with Caution</label>
+                <input id="cfg-lit-caution" type="text" placeholder="e.g. Pre-2000 studies, single-site samples" />
+              </div>
+            </div>
+            <div class="hint" style="margin-top:4px">Reflection will flag hypotheses grounded only in cautioned sources. Affects review calibration.</div>
+          </div>
+
+          <!-- Run Settings tab -->
+          <div class="tab-panel" id="tab-run">
+            <div class="run-mode-cards">
+              <div class="run-mode-card" id="rmc-timed" data-mode="timed">
+                <div class="rmc-icon">⏱</div>
+                <div class="rmc-body">
+                  <strong>Run for fixed time</strong>
+                  <span>Rounds fire continuously until the timer expires or convergence triggers. No manual checkpoints.</span>
+                </div>
+              </div>
+              <div class="run-mode-card" id="rmc-rounds" data-mode="rounds">
+                <div class="rmc-icon">↺</div>
+                <div class="rmc-body">
+                  <strong>Fixed rounds</strong>
+                  <span>Run a set number of rounds with full control over per-round parameters.</span>
+                </div>
+              </div>
+            </div>
+            <input type="hidden" id="cfg-run-mode" value="timed" />
+
+            <!-- Timed mode settings -->
+            <div id="run-settings-timed">
+              <div class="form-group">
+                <label>Duration (minutes)</label>
+                <input id="cfg-duration" type="number" value="10" min="1" max="600" />
+              </div>
+              <div class="run-estimate-box" id="run-estimate">
+                <span class="run-estimate-icon">≈</span>
+                <span id="run-estimate-text">With 10 minutes, expect roughly 2–3 rounds (3–4 min/round at default settings).</span>
+              </div>
+              <div class="hint">Per-round parameters are set automatically at defaults. Switch to Fixed Rounds mode to control them.</div>
+            </div>
+
+            <!-- Rounds mode settings -->
+            <div id="run-settings-rounds" style="display:none">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Max Rounds</label>
+                  <input id="cfg-rounds" type="number" value="3" min="1" max="50" />
+                </div>
+                <div class="form-group">
+                  <label>Hypotheses per Round</label>
+                  <input id="cfg-hyp-count" type="number" value="15" min="5" max="50" />
+                  <div class="hint">New hypotheses generated each round. More = richer space, slower rounds.</div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Evolved per Round</label>
+                  <input id="cfg-evolved" type="number" value="5" min="1" max="20" />
+                  <div class="hint">Top hypotheses refined/combined each round.</div>
+                </div>
+                <div class="form-group">
+                  <label>Contender Pool Size</label>
+                  <input id="cfg-contenders" type="number" value="10" min="3" max="30" />
+                  <div class="hint">Top-N hypotheses that enter Tier 2 debate in the tournament.</div>
+                </div>
+              </div>
+              <div class="run-estimate-box">
+                <span class="run-estimate-icon">≈</span>
+                <span id="run-estimate-rounds">3 rounds × ~3 min/round = ~9 minutes estimated.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions bar -->
+          <div class="setup-actions">
+            <button class="btn btn-primary" id="btn-start">▶ Start Run</button>
+            <button class="btn btn-secondary" id="btn-resume">↺ Resume</button>
+            <div class="action-divider"></div>
+            <button class="btn btn-secondary" id="btn-save-intake">💾 Save intake</button>
+            <button class="btn btn-secondary" id="btn-back-welcome">← Back</button>
+            <button class="btn btn-danger" id="btn-reset" style="margin-left:auto">✕ Reset state</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live panel -->
+    <div id="panel-live" class="panel">
+      <div class="panel-header">
+        <h2>Live Run</h2>
+        <div class="badge" id="live-round-badge">Round 0</div>
+        <button class="btn btn-danger" id="btn-stop" style="margin-left:auto; display:none">⏹ Stop</button>
+      </div>
+      <div class="panel-body" style="padding:0; overflow:hidden;">
+        <div class="live-layout">
+          <div id="log-pane"></div>
+          <div id="stats-pane">
+            <div class="stat-card">
+              <h4>Progress</h4>
+              <div class="stat-row"><span class="stat-label">Round</span><span class="stat-value accent" id="st-round">—</span></div>
+              <div class="stat-row"><span class="stat-label">Phase</span><span class="stat-value" id="st-phase">—</span></div>
+              <div class="progress-bar"><div class="progress-fill" id="st-progress" style="width:0%"></div></div>
+            </div>
+            <div class="stat-card" id="time-card" style="display:none">
+              <h4>Time Remaining</h4>
+              <div class="stat-row"><span class="stat-label" id="time-label">—</span><span class="stat-value" id="time-value">—</span></div>
+              <div class="time-bar"><div class="time-fill" id="time-fill" style="width:100%"></div></div>
+            </div>
+            <div class="stat-card">
+              <h4>Hypothesis Pool</h4>
+              <div class="stat-row"><span class="stat-label">Total</span><span class="stat-value" id="st-total">0</span></div>
+              <div class="stat-row"><span class="stat-label">Active</span><span class="stat-value green" id="st-active">0</span></div>
+              <div class="stat-row"><span class="stat-label">Rejected</span><span class="stat-value red" id="st-rejected">0</span></div>
+              <div class="stat-row"><span class="stat-label">Evolved</span><span class="stat-value accent" id="st-evolved">0</span></div>
+            </div>
+            <div class="stat-card">
+              <h4>Convergence Signals</h4>
+              <div class="stat-row"><span class="stat-label">Spearman ρ</span><span class="stat-value" id="st-spearman">—</span></div>
+              <div class="stat-row"><span class="stat-label">Top-5 Churn</span><span class="stat-value" id="st-churn">—</span></div>
+              <div class="stat-row"><span class="stat-label">Elo Spread</span><span class="stat-value" id="st-spread">—</span></div>
+              <div class="stat-row"><span class="stat-label">Singletons</span><span class="stat-value" id="st-singletons">—</span></div>
+              <div class="chart-wrap">
+                <svg class="mini-chart" id="spearman-chart" viewBox="0 0 260 60">
+                  <line class="chart-grid" x1="0" y1="0" x2="260" y2="0"/>
+                  <line class="chart-grid" x1="0" y1="30" x2="260" y2="30"/>
+                  <line class="chart-grid" x1="0" y1="60" x2="260" y2="60"/>
+                  <text class="chart-label" x="262" y="4">1.0</text>
+                  <text class="chart-label" x="262" y="34">0.5</text>
+                  <text class="chart-label" x="262" y="64">0.0</text>
+                  <polyline class="chart-line" id="spearman-line" points=""/>
+                  <g id="spearman-dots"></g>
+                </svg>
+              </div>
+            </div>
+            <div class="stat-card">
+              <h4>Elo Standings</h4>
+              <div class="stat-row"><span class="stat-label">Best</span><span class="stat-value accent" id="st-best-elo">—</span></div>
+              <div class="stat-row"><span class="stat-label">Top-10 avg</span><span class="stat-value" id="st-avg-elo">—</span></div>
+              <div id="top3-list" style="margin-top:8px; font-size:12px; color:var(--muted); line-height:2;"></div>
+            </div>
+            <div class="stat-card">
+              <h4>Agents</h4>
+              <div class="agent-list" id="agent-list">
+                <div class="agent-row"><div class="agent-dot" style="background:var(--agent-generation)"></div><span class="agent-name">Generation</span><span class="agent-status" id="ag-generation">—</span></div>
+                <div class="agent-row"><div class="agent-dot" style="background:var(--agent-proximity)"></div><span class="agent-name">Proximity</span><span class="agent-status" id="ag-proximity">—</span></div>
+                <div class="agent-row"><div class="agent-dot" style="background:var(--agent-reflection)"></div><span class="agent-name">Reflection</span><span class="agent-status" id="ag-reflection">—</span></div>
+                <div class="agent-row"><div class="agent-dot" style="background:var(--agent-ranking)"></div><span class="agent-name">Ranking</span><span class="agent-status" id="ag-ranking">—</span></div>
+                <div class="agent-row"><div class="agent-dot" style="background:var(--agent-evolution)"></div><span class="agent-name">Evolution</span><span class="agent-status" id="ag-evolution">—</span></div>
+                <div class="agent-row"><div class="agent-dot" style="background:var(--agent-meta-review)"></div><span class="agent-name">Meta-review</span><span class="agent-status" id="ag-meta-review">—</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hypotheses panel -->
+    <div id="panel-hypotheses" class="panel">
+      <div class="panel-header">
+        <h2>Hypothesis Corpus</h2>
+        <div class="badge" id="hyp-count-badge">0 hypotheses</div>
+      </div>
+      <div class="panel-body">
+        <div class="hyp-toolbar">
+          <input id="hyp-search" type="text" placeholder="Search title, statement, front…" />
+          <select id="hyp-filter-status">
+            <option value="">All statuses</option>
+            <option value="active">Active</option>
+            <option value="rejected">Rejected</option>
+            <option value="new">New</option>
+          </select>
+          <select id="hyp-filter-origin">
+            <option value="">All origins</option>
+            <option value="generation">Generation</option>
+            <option value="evolution">Evolution</option>
+          </select>
+          <button class="btn btn-secondary" id="btn-refresh-hyp">↺ Refresh</button>
+          <span class="hyp-count" id="hyp-shown-count"></span>
+        </div>
+        <table class="hyp-table">
+          <thead>
+            <tr>
+              <th data-sort="id">ID <span class="sort-arrow">↕</span></th>
+              <th data-sort="title">Title <span class="sort-arrow">↕</span></th>
+              <th data-sort="front">Front <span class="sort-arrow">↕</span></th>
+              <th data-sort="elo" class="sorted">Elo <span class="sort-arrow">↓</span></th>
+              <th data-sort="status">Status <span class="sort-arrow">↕</span></th>
+              <th>Scores</th>
+              <th data-sort="origin">Origin <span class="sort-arrow">↕</span></th>
+            </tr>
+          </thead>
+          <tbody id="hyp-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Report panel -->
+    <div id="panel-report" class="panel">
+      <div class="panel-header"><h2>Final Report</h2></div>
+      <div class="panel-body">
+        <div class="report-actions">
+          <button class="btn btn-secondary" id="btn-export">↓ Export files</button>
+          <button class="btn btn-secondary" id="btn-refresh-report">↺ Refresh</button>
+        </div>
+        <div id="report-content"><div class="empty">Run a session to generate a report.</div></div>
+      </div>
+    </div>
+
+    <!-- Settings panel -->
+    <div id="panel-settings" class="panel">
+      <div class="panel-header"><h2>Settings</h2></div>
+      <div class="panel-body">
+
+        <div class="settings-section">
+          <div class="settings-section-title">API Keys</div>
+          <div class="settings-hint">Enter one key to activate that provider. The other will be disabled. Keys are saved to your local <code>.env</code> file and never leave your machine.</div>
+
+          <div class="settings-key-block" id="key-block-google">
+            <div class="settings-key-header">
+              <div>
+                <strong>Google AI</strong>
+                <span class="provider-badge google" style="margin-left:8px">Free tier</span>
+              </div>
+              <span class="settings-key-status" id="key-status-google"></span>
+            </div>
+            <div class="settings-key-input-row">
+              <input type="password" id="key-input-google" placeholder="AIzaSy…" autocomplete="off" class="settings-key-input" />
+              <button class="btn btn-secondary settings-key-toggle" data-target="key-input-google">Show</button>
+              <button class="btn btn-primary" id="btn-save-google">Save &amp; activate</button>
+            </div>
+            <div class="settings-hint">Get a free key at <strong>aistudio.google.com</strong> → Get API key. Gemini 2.0 Flash is free up to 1,500 requests/day.</div>
+          </div>
+
+          <div class="settings-key-block" id="key-block-anthropic">
+            <div class="settings-key-header">
+              <div>
+                <strong>Anthropic (Claude)</strong>
+                <span class="provider-badge anthropic" style="margin-left:8px">Paid</span>
+              </div>
+              <span class="settings-key-status" id="key-status-anthropic"></span>
+            </div>
+            <div class="settings-key-input-row">
+              <input type="password" id="key-input-anthropic" placeholder="sk-ant-…" autocomplete="off" class="settings-key-input" />
+              <button class="btn btn-secondary settings-key-toggle" data-target="key-input-anthropic">Show</button>
+              <button class="btn btn-primary" id="btn-save-anthropic">Save &amp; activate</button>
+            </div>
+            <div class="settings-hint">Get a key at <strong>console.anthropic.com</strong>. Claude Opus is the highest quality option.</div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">Model</div>
+          <div class="settings-row">
+            <div class="settings-label">
+              <strong>Active model</strong>
+              <span id="settings-provider-badge" class="provider-badge">—</span>
+            </div>
+          </div>
+          <select id="cfg-model" class="settings-select">
+            <option value="">Save an API key first</option>
+          </select>
+          <div class="hint" id="cfg-model-hint" style="margin-top:8px">Model changes apply immediately — even mid-run.</div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">About</div>
+          <div class="settings-hint">CoScientist — multi-agent hypothesis generation system.<br/>Based on Gottweis et al. (2025) arXiv:2502.18864v1.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- App Log panel -->
+    <div id="panel-applog" class="panel">
+      <div class="panel-header">
+        <h2>App Log</h2>
+        <div class="log-level-bar" style="margin-left:auto; border:none; padding:0;">
+          <span class="log-level-label">Show:</span>
+          <button class="log-lvl-btn active" data-level="debug">Debug</button>
+          <button class="log-lvl-btn" data-level="info">Info</button>
+          <button class="log-lvl-btn" data-level="warn">Warn</button>
+          <button class="log-lvl-btn" data-level="error">Error</button>
+        </div>
+        <button class="btn btn-secondary" id="btn-clear-log" style="margin-left:12px;">Clear</button>
+      </div>
+      <div class="panel-body" style="padding:0;">
+        <div id="log-entries"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+<script src="web-bridge.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

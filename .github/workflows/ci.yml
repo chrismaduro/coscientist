@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    name: Test (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['20', '22']
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node ${{ matrix.node }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run test suite
+        run: npm test
+
+  build-smoke:
+    name: Build single-file exe (smoke)
+    runs-on: windows-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Build .exe
+        run: npm run build:exe
+      - name: Verify the exe boots and serves the API
+        shell: pwsh
+        run: |
+          $env:NO_OPEN = "1"; $env:PORT = "4321"
+          $p = Start-Process ".\dist\CoScientist.exe" -PassThru -NoNewWindow
+          Start-Sleep -Seconds 4
+          try {
+            $r = Invoke-WebRequest -Uri "http://localhost:4321/api/provider-info" -UseBasicParsing -TimeoutSec 5
+            if ($r.StatusCode -ne 200) { throw "unexpected status $($r.StatusCode)" }
+            Write-Host "exe served API OK"
+          } finally {
+            Stop-Process -Id $p.Id -Force
+          }
+      - name: Upload exe artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CoScientist-windows
+          path: dist/
+          retention-days: 7
