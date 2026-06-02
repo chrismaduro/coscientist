@@ -41,7 +41,7 @@ test('GET / serves the index HTML', async () => {
   const res = await fetch(base + '/');
   assert.equal(res.status, 200);
   const html = await res.text();
-  assert.match(html, /CoScientist/);
+  assert.match(html, /LabMate/);
 });
 
 test('GET /web-bridge.js is served', async () => {

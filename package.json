@@ -1,11 +1,11 @@
 {
-  "name": "coscientist",
+  "name": "labmate",
   "version": "1.0.0",
-  "description": "CoScientist multi-agent hypothesis generation system",
+  "description": "LabMate — a multi-agent AI lab partner that generates, debates, ranks, and evolves research hypotheses",
   "type": "module",
   "main": "server.js",
   "bin": {
-    "coscientist": "./main.js"
+    "labmate": "./main.js"
   },
   "scripts": {
     "start": "node main.js",

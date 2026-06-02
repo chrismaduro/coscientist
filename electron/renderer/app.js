@@ -1,4 +1,4 @@
-/* CoScientist renderer — plain ES module, no framework */
+/* LabMate renderer — plain ES module, no framework */
 'use strict';
 
 // Surface any uncaught error visibly instead of silently halting the script.
@@ -781,7 +781,7 @@ async function refreshReport() {
     .map(c => `  • ${c.name} — ${c.relevance}`).join('\n') || '  none';
 
   el.textContent = `═══════════════════════════════════════════════════
-CoScientist Report  ·  ${state.run_id}
+LabMate Report  ·  ${state.run_id}
 ═══════════════════════════════════════════════════
 
 Research goal: ${state.research_goal}

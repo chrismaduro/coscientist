@@ -299,7 +299,7 @@ export async function saveFinalReport(state) {
     `| ${h.id} | ${h.elo || 1200} | ${h.title} | ${h.status} |`
   ).join('\n');
 
-  const report = `# CoScientist Final Report
+  const report = `# LabMate Final Report
 
 **Run ID:** ${state.run_id}
 **Research Goal:** ${state.research_goal}

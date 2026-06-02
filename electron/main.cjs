@@ -8,11 +8,11 @@ const { rm, readFile, writeFile } = require('fs/promises');
 const { pathToFileURL } = require('url');
 
 // ── Quiet Chromium's GPU/disk-cache noise & isolate the cache dir ──────────
-app.setName('CoScientist');
+app.setName('LabMate');
 app.disableHardwareAcceleration();
 app.commandLine.appendSwitch('disable-gpu-shader-disk-cache');
 try {
-  app.setPath('userData', path.join(app.getPath('appData'), 'CoScientist'));
+  app.setPath('userData', path.join(app.getPath('appData'), 'LabMate'));
 } catch { /* ignore */ }
 
 // ── .env (authoritative over stale shell vars) ─────────────────────────────
@@ -85,7 +85,7 @@ function createWindow() {
     }
     const provider = process.env.GOOGLE_API_KEY ? 'Google AI'
                    : process.env.ANTHROPIC_API_KEY ? 'Anthropic' : null;
-    appLog('info', 'CoScientist started');
+    appLog('info', 'LabMate started');
     appLog('info', `Provider: ${provider || 'none — add an API key in Settings'}`);
     if (!provider) appLog('warn', 'No API key found. Open Settings to add one.');
   });
@@ -336,7 +336,7 @@ ipcMain.handle('save-api-key', async (_, { provider, key }) => {
     const envKey   = provider === 'google' ? 'GOOGLE_API_KEY' : 'ANTHROPIC_API_KEY';
     const otherKey = provider === 'google' ? 'ANTHROPIC_API_KEY' : 'GOOGLE_API_KEY';
     const newContent = [
-      `# CoScientist API keys — active provider: ${provider}`,
+      `# LabMate API keys — active provider: ${provider}`,
       `${envKey}=${key}`,
       `# ${otherKey}=`,
       '',

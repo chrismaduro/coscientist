@@ -41,7 +41,7 @@ async function askMultiline(iface, prompt) {
 async function runIntakeWizard(state) {
   const iface = rl();
   console.log(chalk.white('\n╔══════════════════════════════════════╗'));
-  console.log(chalk.white('║   CoScientist — Intake Wizard        ║'));
+  console.log(chalk.white('║   LabMate — Intake Wizard            ║'));
   console.log(chalk.white('╚══════════════════════════════════════╝\n'));
 
   state.research_goal = await ask(iface, chalk.cyan('1. Research goal (what question are you investigating?):\n  > '));
@@ -109,7 +109,7 @@ function printStatus(state) {
   const topId = state.tournament.ranking[0];
   const topHyp = state.hypotheses.find(h => h.id === topId);
 
-  console.log(chalk.white('\n── CoScientist Status ─────────────────────────'));
+  console.log(chalk.white('\n── LabMate Status ─────────────────────────'));
   console.log(chalk.white(`Run ID:        ${state.run_id}`));
   console.log(chalk.white(`Research goal: ${state.research_goal}`));
   console.log(chalk.white(`Phase:         ${state.phase}  (round ${state.round} / ${state.config.max_rounds})`));
@@ -281,7 +281,7 @@ switch (cmd) {
   }
 
   default:
-    console.log(chalk.white(`CoScientist — multi-agent hypothesis generation
+    console.log(chalk.white(`LabMate — multi-agent hypothesis generation
 
 Usage:
   node main.js run                       Start a new run (launches intake wizard)

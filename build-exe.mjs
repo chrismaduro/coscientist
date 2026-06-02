@@ -1,4 +1,4 @@
-// Build CoScientist into a single-file Windows executable using Node SEA.
+// Build LabMate into a single-file Windows executable using Node SEA.
 // Run: node build-exe.mjs
 import { build } from 'esbuild';
 import { execFileSync } from 'child_process';
@@ -10,7 +10,7 @@ const root = path.dirname(fileURLToPath(import.meta.url));
 const dist = path.join(root, 'dist');
 const FUSE = 'NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2';
 const isWin = process.platform === 'win32';
-const exeName = isWin ? 'CoScientist.exe' : 'CoScientist';
+const exeName = isWin ? 'LabMate.exe' : 'LabMate';
 const exePath = path.join(dist, exeName);
 
 function step(msg) { console.log(`\n▸ ${msg}`); }
@@ -25,7 +25,7 @@ function step(msg) { console.log(`\n▸ ${msg}`); }
     bundle: true,
     platform: 'node',
     format: 'cjs',
-    outfile: path.join(dist, 'coscientist.cjs'),
+    outfile: path.join(dist, 'labmate.cjs'),
     banner: {
       js: "try{var __p=require('path');var __s=require('node:sea');if(__s.isSea())process.env.COSCI_BASE=__p.dirname(process.execPath);}catch(e){}",
     },
@@ -44,7 +44,7 @@ function step(msg) { console.log(`\n▸ ${msg}`); }
   //    Windows the original signature is invalidated (harmless for local use).
   step('Injecting app blob (postject)…');
   const postjectArgs = [
-    'postject', exePath, 'NODE_SEA_BLOB', path.join(dist, 'coscientist.blob'),
+    'postject', exePath, 'NODE_SEA_BLOB', path.join(dist, 'labmate.blob'),
     '--sentinel-fuse', FUSE,
   ];
   if (process.platform === 'darwin') postjectArgs.push('--macho-segment-name', 'NODE_SEA');
@@ -60,7 +60,7 @@ function step(msg) { console.log(`\n▸ ${msg}`); }
   }
 
   // Tidy intermediate files
-  for (const f of ['coscientist.cjs', 'coscientist.blob']) {
+  for (const f of ['labmate.cjs', 'labmate.blob']) {
     try { rmSync(path.join(dist, f)); } catch {}
   }
 

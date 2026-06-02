@@ -1,4 +1,4 @@
-// CoScientist local server — serves the UI and exposes the backend over plain
+// LabMate local server — serves the UI and exposes the backend over plain
 // HTTP + Server-Sent Events. No Electron, no preload, no IPC. This is the
 // reliable, fully-testable transport: the same renderer talks to it via fetch.
 import http from 'http';
@@ -180,7 +180,7 @@ const api = {
       const envKey   = provider === 'google' ? 'GOOGLE_API_KEY' : 'ANTHROPIC_API_KEY';
       const otherKey = provider === 'google' ? 'ANTHROPIC_API_KEY' : 'GOOGLE_API_KEY';
       const content = [
-        `# CoScientist API keys — active provider: ${provider}`,
+        `# LabMate API keys — active provider: ${provider}`,
         `${envKey}=${key}`,
         `# ${otherKey}=`, '',
       ].join('\n');
@@ -375,8 +375,8 @@ export const server = http.createServer(async (req, res) => {
 export function startServer(port = PORT, { openBrowser = !process.env.NO_OPEN } = {}) {
   server.listen(port, () => {
     const url = `http://localhost:${port}`;
-    _origLog(`\n  CoScientist running at ${url}\n`);
-    appLog('info', 'CoScientist server started');
+    _origLog(`\n  LabMate running at ${url}\n`);
+    appLog('info', 'LabMate server started');
     const provider = process.env.GOOGLE_API_KEY ? 'Google AI' : process.env.ANTHROPIC_API_KEY ? 'Anthropic' : null;
     appLog('info', `Provider: ${provider || 'none — add an API key in Settings'}`);
     if (!provider) appLog('warn', 'No API key found. Open Settings to add one.');

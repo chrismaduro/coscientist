@@ -46,7 +46,7 @@ jobs:
         shell: pwsh
         run: |
           $env:NO_OPEN = "1"; $env:PORT = "4321"
-          $p = Start-Process ".\dist\CoScientist.exe" -PassThru -NoNewWindow
+          $p = Start-Process ".\dist\LabMate.exe" -PassThru -NoNewWindow
           Start-Sleep -Seconds 4
           try {
             $r = Invoke-WebRequest -Uri "http://localhost:4321/api/provider-info" -UseBasicParsing -TimeoutSec 5
@@ -58,6 +58,6 @@ jobs:
       - name: Upload exe artifact
         uses: actions/upload-artifact@v4
         with:
-          name: CoScientist-windows
+          name: LabMate-windows
           path: dist/
           retention-days: 7

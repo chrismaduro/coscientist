@@ -1,5 +1,5 @@
 {
-  "main": "dist/coscientist.cjs",
-  "output": "dist/coscientist.blob",
+  "main": "dist/labmate.cjs",
+  "output": "dist/labmate.blob",
   "disableExperimentalSEAWarning": true
 }
