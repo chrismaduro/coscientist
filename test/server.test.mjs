@@ -271,3 +271,56 @@ test('GET /api/load-example returns correct shape', async () => {
   if (r.ok) assert.equal(typeof r.data, 'object');
   else assert.ok(r.error, 'failure must include error message');
 });
+
+// ── Friendly error contract (FR-015 – FR-018) ─────────────────────────────────
+// When an API call fails, the returned error must be brief plain text —
+// never raw JSON, never a multi-line stack trace.
+
+test('FR-015: guide-chat error is brief plain text (no raw JSON curly braces)', async () => {
+  const saved = { g: process.env.GOOGLE_API_KEY, a: process.env.ANTHROPIC_API_KEY };
+  delete process.env.GOOGLE_API_KEY;
+  delete process.env.ANTHROPIC_API_KEY;
+  try {
+    const r = await post('/api/guide-chat', { message: 'hello' });
+    assert.equal(r.ok, false);
+    // Friendly message must not contain raw JSON-like content
+    assert.ok(!r.error.includes('{'), 'error must not contain raw JSON braces');
+    assert.ok(!r.error.includes('\n'), 'error must not be multi-line');
+    assert.ok(r.error.length < 200, 'error must be brief (< 200 chars)');
+  } finally {
+    if (saved.g) process.env.GOOGLE_API_KEY = saved.g;
+    if (saved.a) process.env.ANTHROPIC_API_KEY = saved.a;
+  }
+});
+
+test('FR-015: test-api error is brief plain text (no raw JSON)', async () => {
+  const saved = { g: process.env.GOOGLE_API_KEY, a: process.env.ANTHROPIC_API_KEY };
+  delete process.env.GOOGLE_API_KEY;
+  delete process.env.ANTHROPIC_API_KEY;
+  try {
+    const r = await post('/api/test-api');
+    assert.equal(r.ok, false);
+    assert.ok(!r.error.includes('{'), 'error must not contain raw JSON braces');
+    assert.ok(!r.error.includes('\n'), 'error must not be multi-line');
+    assert.ok(r.error.length < 200, 'error must be brief (< 200 chars)');
+  } finally {
+    if (saved.g) process.env.GOOGLE_API_KEY = saved.g;
+    if (saved.a) process.env.ANTHROPIC_API_KEY = saved.a;
+  }
+});
+
+test('FR-015: start-run error is brief plain text (no raw JSON)', async () => {
+  const saved = { g: process.env.GOOGLE_API_KEY, a: process.env.ANTHROPIC_API_KEY };
+  delete process.env.GOOGLE_API_KEY;
+  delete process.env.ANTHROPIC_API_KEY;
+  try {
+    const r = await post('/api/start-run', { research_goal: 'test' });
+    assert.equal(r.ok, false);
+    assert.ok(!r.error.includes('{'), 'error must not contain raw JSON braces');
+    assert.ok(!r.error.includes('\n'), 'error must not be multi-line');
+    assert.ok(r.error.length < 200, 'error must be brief (< 200 chars)');
+  } finally {
+    if (saved.g) process.env.GOOGLE_API_KEY = saved.g;
+    if (saved.a) process.env.ANTHROPIC_API_KEY = saved.a;
+  }
+});

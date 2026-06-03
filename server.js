@@ -56,6 +56,38 @@ function broadcast(type, data) {
   }
 }
 
+// ── Error helpers ─────────────────────────────────────────────────────────────
+/**
+ * Convert a raw API error (which may contain multi-line JSON) into a short
+ * human-readable message for the UI, while logging the full detail to appLog.
+ * Returns { friendly: string, detail: string }.
+ */
+function friendlyApiError(err, context = 'API') {
+  const raw = err?.message || String(err);
+  let friendly;
+
+  if (raw.includes('RESOURCE_EXHAUSTED') || raw.includes('429') || raw.includes('quota')) {
+    friendly = 'Quota exceeded — free-tier limit reached. Wait a moment and try again.';
+  } else if (raw.includes('UNAUTHENTICATED') || raw.includes('API_KEY_INVALID') || raw.includes('invalid_api_key')) {
+    friendly = 'Invalid API key — go to Settings and re-enter your key.';
+  } else if (raw.includes('No API key') || raw.includes('GOOGLE_API_KEY') || raw.includes('ANTHROPIC_API_KEY')) {
+    friendly = 'No API key configured — go to Settings → API Key and save your key.';
+  } else if (raw.includes('PERMISSION_DENIED') || raw.includes('403')) {
+    friendly = 'Permission denied — your key may not have access to this model.';
+  } else if (raw.includes('UNAVAILABLE') || raw.includes('503') || raw.includes('overloaded')) {
+    friendly = 'The AI service is temporarily unavailable. Please try again shortly.';
+  } else if (raw.includes('network') || raw.includes('ECONNREFUSED') || raw.includes('fetch')) {
+    friendly = 'Network error — check your internet connection and try again.';
+  } else {
+    // Generic: first sentence only, capped at 120 chars
+    const first = raw.split(/[\n{]/)[0].trim();
+    friendly = first.length > 120 ? first.slice(0, 117) + '…' : first || 'An unexpected error occurred.';
+  }
+
+  appLog('error', `[${context}] ${friendly}\nDetail: ${raw}`, context.toLowerCase());
+  return { friendly, detail: raw };
+}
+
 // Buffer log entries so they survive until a client connects
 const _logBuffer = [];
 function appLog(level, message, agent = 'app') {
@@ -216,8 +248,8 @@ const api = {
       executeRun(state, anthropic, stopAt, config.model || null);
       return { ok: true, run_id: runId };
     } catch (err) {
-      appLog('error', err.message);
-      return { ok: false, error: err.message };
+      const { friendly } = friendlyApiError(err, 'Start run');
+      return { ok: false, error: friendly };
     }
   },
 
@@ -229,7 +261,10 @@ const api = {
       const stopAt = opts?.runMode === 'timed' && opts?.durationMs ? Date.now() + opts.durationMs : null;
       executeRun(state, anthropic, stopAt, opts?.model || null);
       return { ok: true, run_id: state.run_id };
-    } catch (err) { return { ok: false, error: err.message }; }
+    } catch (err) {
+      const { friendly } = friendlyApiError(err, 'Resume run');
+      return { ok: false, error: friendly };
+    }
   },
 
   'POST /api/stop-run': async () => {
@@ -284,7 +319,10 @@ const api = {
       const m = fullText.match(/```intake\s*([\s\S]*?)\s*```/);
       if (m) { try { broadcast('guide-intake-ready', JSON.parse(m[1])); } catch {} }
       return { ok: true };
-    } catch (err) { return { ok: false, error: err.message }; }
+    } catch (err) {
+      const { friendly } = friendlyApiError(err, 'Guide');
+      return { ok: false, error: friendly };
+    }
   },
 
   'POST /api/guide-reset': async () => { guideHistory = []; return { ok: true }; },
@@ -309,7 +347,8 @@ const api = {
       }
       return { ok: true, provider, reply: reply.trim() };
     } catch (err) {
-      return { ok: false, error: err.message };
+      const { friendly } = friendlyApiError(err, 'Connection test');
+      return { ok: false, error: friendly };
     }
   },
 

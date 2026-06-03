@@ -58,6 +58,39 @@ function guideScrollBottom() {
   el.scrollTop = el.scrollHeight;
 }
 
+// Show a brief, dismissable error in an assistant bubble.
+// Full details are already in the App Log (logged server-side).
+function showGuidError(wrapEl, bubbleEl, message) {
+  bubbleEl.classList.add('guide-error');
+  bubbleEl.innerHTML = '';
+
+  const icon = document.createElement('span');
+  icon.textContent = '⚠ ';
+  icon.style.flexShrink = '0';
+
+  const text = document.createElement('span');
+  text.textContent = message;
+  text.style.flex = '1';
+
+  const hint = document.createElement('span');
+  hint.textContent = 'Details in App Log';
+  hint.className = 'guide-error-hint';
+
+  const dismiss = document.createElement('button');
+  dismiss.textContent = '×';
+  dismiss.className = 'guide-error-dismiss';
+  dismiss.title = 'Dismiss';
+  dismiss.addEventListener('click', () => wrapEl.remove());
+
+  bubbleEl.style.display = 'flex';
+  bubbleEl.style.alignItems = 'flex-start';
+  bubbleEl.style.gap = '6px';
+  bubbleEl.appendChild(icon);
+  bubbleEl.appendChild(text);
+  bubbleEl.appendChild(hint);
+  bubbleEl.appendChild(dismiss);
+}
+
 async function guideSend(userText) {
   if (_guideStreaming || !userText.trim()) return;
   _guideStreaming = true;
@@ -90,15 +123,9 @@ async function guideSend(userText) {
   aBubble.classList.remove('streaming');
   window.cs.removeAllListeners('guide-chunk');
 
-  // If the call failed and nothing streamed, show the error in the bubble
+  // If the call failed and nothing streamed, show a brief dismissable error bubble
   if (result && !result.ok && !fullText) {
-    aBubble.classList.add('guide-error');
-    const msg = result.error || 'Unknown error';
-    if (msg.includes('API key') || msg.includes('GOOGLE_API_KEY') || msg.includes('ANTHROPIC_API_KEY') || msg.includes('credentials')) {
-      aBubble.textContent = '⚠ No API key configured. Go to Settings → API Key and paste your Google or Anthropic key, then click Save & Activate.';
-    } else {
-      aBubble.textContent = `⚠ API error: ${msg}`;
-    }
+    showGuidError(aWrap, aBubble, result.error || 'An unexpected error occurred.');
     guideScrollBottom();
   }
 
