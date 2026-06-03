@@ -40,6 +40,7 @@
     saveApiKey:      (data)   => post('/api/save-api-key', data),
     guideChat:       (msg)    => post('/api/guide-chat', { message: msg }),
     guideReset:      ()       => post('/api/guide-reset'),
+    testApi:         ()       => post('/api/test-api'),
     loadExample:     ()       => get('/api/load-example'),
     saveIntake:      (data)   => post('/api/save-intake', data),
     loadIntake:      ()       => post('/api/load-intake'),

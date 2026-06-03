@@ -289,6 +289,30 @@ const api = {
 
   'POST /api/guide-reset': async () => { guideHistory = []; return { ok: true }; },
 
+  'POST /api/test-api': async () => {
+    try {
+      const { provider, client } = createClient();
+      let reply = '';
+      if (provider === 'google') {
+        const res = await client.models.generateContent({
+          model: 'gemini-2.0-flash',
+          contents: [{ role: 'user', parts: [{ text: 'Reply with the single word: ok' }] }],
+          config: { maxOutputTokens: 10 },
+        });
+        reply = res.text ?? '';
+      } else {
+        const res = await client.messages.create({
+          model: 'claude-haiku-4-5', max_tokens: 10,
+          messages: [{ role: 'user', content: 'Reply with the single word: ok' }],
+        });
+        reply = res.content?.[0]?.text ?? '';
+      }
+      return { ok: true, provider, reply: reply.trim() };
+    } catch (err) {
+      return { ok: false, error: err.message };
+    }
+  },
+
   'POST /api/save-intake': async (body) => {
     try {
       const p = path.join(BASE, 'intake.saved.json');

@@ -478,6 +478,7 @@ html, body {
 .guide-msg.assistant .guide-bubble { border-top-left-radius: 3px; }
 .guide-bubble.streaming::after { content: '▋'; animation: blink 0.7s infinite; color: var(--accent); }
 @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+.guide-bubble.guide-error { border-color: var(--red); color: var(--red); background: rgba(220,50,50,0.07); }
 
 .guide-apply-bar {
   display: flex; align-items: center; gap: 12px;

@@ -85,10 +85,23 @@ async function guideSend(userText) {
     guideScrollBottom();
   });
 
-  await window.cs.guideChat(userText);
+  const result = await window.cs.guideChat(userText);
 
   aBubble.classList.remove('streaming');
   window.cs.removeAllListeners('guide-chunk');
+
+  // If the call failed and nothing streamed, show the error in the bubble
+  if (result && !result.ok && !fullText) {
+    aBubble.classList.add('guide-error');
+    const msg = result.error || 'Unknown error';
+    if (msg.includes('API key') || msg.includes('GOOGLE_API_KEY') || msg.includes('ANTHROPIC_API_KEY') || msg.includes('credentials')) {
+      aBubble.textContent = '⚠ No API key configured. Go to Settings → API Key and paste your Google or Anthropic key, then click Save & Activate.';
+    } else {
+      aBubble.textContent = `⚠ API error: ${msg}`;
+    }
+    guideScrollBottom();
+  }
+
   _guideStreaming = false;
   document.getElementById('btn-guide-send').disabled = false;
   document.getElementById('guide-input').focus();
@@ -1088,6 +1101,34 @@ function escHtml(str) {
   // Attach listeners synchronously
   document.getElementById('btn-save-google')?.addEventListener('click', () => saveKey('google'));
   document.getElementById('btn-save-anthropic')?.addEventListener('click', () => saveKey('anthropic'));
+
+  document.getElementById('btn-test-api')?.addEventListener('click', async () => {
+    const btn    = document.getElementById('btn-test-api');
+    const status = document.getElementById('test-api-status');
+    if (!btn || !status) return;
+    btn.disabled = true;
+    status.style.color = 'var(--muted)';
+    status.textContent = 'Testing…';
+    try {
+      const r = await window.cs.testApi();
+      if (r && r.ok) {
+        status.style.color = 'var(--green)';
+        status.textContent = `✓ Connected — ${r.provider} replied: "${r.reply}"`;
+      } else {
+        status.style.color = 'var(--red)';
+        const msg = r?.error || 'Unknown error';
+        if (msg.includes('API key') || msg.includes('GOOGLE_API_KEY') || msg.includes('ANTHROPIC_API_KEY') || msg.includes('No key')) {
+          status.textContent = '⚠ No API key set. Save a key above first.';
+        } else {
+          status.textContent = `⚠ ${msg}`;
+        }
+      }
+    } catch (err) {
+      status.style.color = 'var(--red)';
+      status.textContent = `⚠ ${err.message}`;
+    }
+    btn.disabled = false;
+  });
   document.getElementById('cfg-model')?.addEventListener('change', async (e) => {
     try { await window.cs.setModel(e.target.value); } catch {}
   });
