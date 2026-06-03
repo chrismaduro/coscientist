@@ -75,6 +75,7 @@ function stubCs() {
   return {
     startRun: ok, resumeRun: ok, stopRun: ok, exportReport: ok, resetState: ok,
     saveApiKey: ok, setModel: ok, guideChat: ok, guideReset: ok, saveIntake: ok, loadIntake: ok,
+    testApi: ok,
     getState: () => Promise.resolve(null),
     getProviderInfo: () => Promise.resolve({ provider: null, models: [], currentModel: null }),
     getApiKeys: () => Promise.resolve({ activeProvider: null, googleKey: '', anthropicKey: '' }),
