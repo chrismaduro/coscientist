@@ -158,6 +158,8 @@ Every requirement has a unique ID (`FR-NNN`). The test suite must cover every it
 | FR-133 | Unknown routes return HTTP 404 | ✓ `server.test: 404` |
 | FR-134 | `/api/events` returns `text/event-stream` content-type | ✓ `server.test: SSE connects` |
 | FR-135 | `POST /api/set-model` accepts a model string and returns `ok:true` | ✓ `server.test: set-model ok` |
+| FR-136 | Server auto-increments to the next free port if the chosen port is busy — never crashes on `EADDRINUSE` | ✓ `port.test: auto-increments when busy` |
+| FR-137 | An uncaught startup error keeps the console open (parks the event loop) instead of exiting silently — so a double-clicked .exe shows the error | — (process-crash behavior; verified manually) |
 
 ---
 

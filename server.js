@@ -435,11 +435,34 @@ export const server = http.createServer(async (req, res) => {
   res.writeHead(404); res.end('Not found');
 });
 
-export function startServer(port = PORT, { openBrowser = !process.env.NO_OPEN } = {}) {
-  server.listen(port, () => {
-    const url = `http://localhost:${port}`;
+export function startServer(port = PORT, { openBrowser = !process.env.NO_OPEN, maxAttempts = 20 } = {}) {
+  const startPort = Number(port);
+  let attempt = 0;
+
+  // If the chosen port is busy, step to the next one instead of crashing.
+  // This is what was killing the double-clicked .exe: with the dev server
+  // already on 4173, an unhandled EADDRINUSE exited the process instantly.
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE' && attempt < maxAttempts) {
+      const busy = startPort + attempt;
+      attempt++;
+      _origLog(`  Port ${busy} is in use, trying ${startPort + attempt}…`);
+      setTimeout(() => server.listen(startPort + attempt), 80);
+    } else {
+      _origError(`\n  ✗ LabMate could not start: ${err.message}`);
+      _origError('  Close any other copy of LabMate, then run it again.');
+      _origError('  (This window stays open so you can read the message.)\n');
+      // Park the event loop so a double-clicked window doesn't vanish.
+      setInterval(() => {}, 1 << 30);
+    }
+  });
+
+  server.on('listening', () => {
+    const addr = server.address();
+    const actualPort = addr && typeof addr === 'object' ? addr.port : startPort;
+    const url = `http://localhost:${actualPort}`;
     _origLog(`\n  LabMate running at ${url}\n`);
-    appLog('info', 'LabMate server started');
+    appLog('info', `LabMate server started on port ${actualPort}`);
     const provider = process.env.GOOGLE_API_KEY ? 'Google AI' : process.env.ANTHROPIC_API_KEY ? 'Anthropic' : null;
     appLog('info', `Provider: ${provider || 'none — add an API key in Settings'}`);
     if (!provider) appLog('warn', 'No API key found. Open Settings to add one.');
@@ -450,10 +473,23 @@ export function startServer(port = PORT, { openBrowser = !process.env.NO_OPEN } 
       try { spawn(cmd, args, { detached: true, stdio: 'ignore' }).unref(); } catch {}
     }
   });
+
+  server.listen(startPort);
   return server;
 }
 
 // Auto-start unless a test harness wants to control startup itself.
 if (!process.env.COSCI_NO_AUTOSTART) {
+  // A double-clicked .exe has no console to inspect after it exits, so make any
+  // unexpected crash readable instead of flashing the window shut.
+  process.on('uncaughtException', (err) => {
+    _origError(`\n  ✗ LabMate hit an unexpected error: ${err.message}`);
+    _origError('  Please report this. This window stays open so you can read it.\n');
+    _origError(String(err.stack || err));
+    setInterval(() => {}, 1 << 30);
+  });
+  process.on('unhandledRejection', (reason) => {
+    _origError(`\n  ✗ LabMate background error: ${reason}`);
+  });
   startServer();
 }
